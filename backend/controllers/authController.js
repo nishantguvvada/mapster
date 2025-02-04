@@ -44,4 +44,12 @@ const login = async (req, res, next) => {
   }
 };
 
-module.exports = { login, register }
+const getMe = async (req, res) => {
+  const user = await User.findById(req.user.id).select('-password');
+  res.status(200).json({
+    status: 'success',
+    data: user
+  });
+};
+
+module.exports = { login, register, getMe }

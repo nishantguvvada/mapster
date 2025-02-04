@@ -5,6 +5,7 @@ import { useMap } from '@/context/MapContext';
 import MapComponent from '@/components/map/MapComponent';
 import ShareModal from '@/components/ui/ShareModal';
 import AddCityForm from '@/components/ui/AddCityForm';
+import { useState, useEffect } from 'react';
 
 export default function MapDetailPage() {
   const params = useParams();
@@ -21,6 +22,7 @@ export default function MapDetailPage() {
 
   return (
     <div className="h-screen relative">
+      <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.45.0/mapbox-gl.css' rel='stylesheet' />
       {/* Map controls */}
       <MapComponent mapData={currentMap} />
       

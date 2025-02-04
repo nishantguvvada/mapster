@@ -1,6 +1,7 @@
 'use client';
 
-import { FaMapMarkerAlt } from 'react-icons/fa';
+import { HiLocationMarker } from "react-icons/hi";
+import { Marker } from 'react-map-gl';
 
 export default function CityMarker({ city, onClick }) {
   return (
@@ -8,13 +9,16 @@ export default function CityMarker({ city, onClick }) {
       latitude={city.location.coordinates[1]}
       longitude={city.location.coordinates[0]}
     >
-      <button
-        className="marker-pulse text-red-500 text-2xl"
-        onClick={onClick}
-        aria-label={`City marker for ${city.name}`}
-      >
-        <FaMapMarkerAlt />
-      </button>
+      <div className="flex flex-col justify-center items-center gap-1">
+        <h1 className="bg-white p-1.5 rounded-lg">{city.name}</h1>
+        <button
+          className="text-red-600 text-2xl"
+          onClick={onClick}
+          aria-label={`City marker for ${city.name}`}
+        >
+          <HiLocationMarker />
+        </button>
+      </div>
     </Marker>
   );
 }
