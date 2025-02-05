@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import ReactMapGL, { Marker, Popup, NavigationControl, GeolocateControl } from 'react-map-gl';
+import ReactMapGL, { Marker, NavigationControl, GeolocateControl } from 'react-map-gl';
+import { SearchBox } from '@mapbox/search-js-react';
 import { HiLocationMarker } from "react-icons/hi";
 import CityMarker from './CityMarker';
-import PlacePopup from '../ui/PlacePopUp';
 
 // https://stackoverflow.com/questions/41057604/error-illegal-reassignment-to-import/41118458#41118458
 
@@ -16,6 +16,9 @@ export default function MapComponent({ mapData }) {
     zoom: 2
   });
   const [selectedPlace, setSelectedPlace] = useState(null);
+  const [searchedLocation, setSearchedLocation] = useState(null);
+  const [inputValue, setInputValue] = useState("");
+  const mapContainerRef = useRef();
 
   const handleClick = (event) => {
     console.log("longlat", event);
@@ -23,16 +26,40 @@ export default function MapComponent({ mapData }) {
       coordinates: [event.lngLat.lng, event.lngLat.lat]
     }});
   }
+  const handleSearchResult = (result) => {
+    const [longitude, latitude] = result.features[0].geometry.coordinates;
+    const name = result.features[0].properties.name;
+    setSearchedLocation({
+      latitude,
+      longitude,
+      name
+    });
+    setInputValue(name);
+  };
 
   return (
     <div className="relative h-screen w-full">
+      <div className="absolute top-4 left-4 z-10 bg-white p-2 rounded shadow">
+        <SearchBox
+          accessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+          options={{
+          language: 'en'
+          }}
+          map={mapContainerRef.current}
+          value={inputValue}
+          onRetrieve={handleSearchResult}
+          marker
+        />
+      </div>
       <ReactMapGL
         {...viewport}
         mapStyle="mapbox://styles/mapbox/streets-v11"
         onMove={e => setViewport(e.viewState)}
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
         onClick={handleClick}
+        ref={mapContainerRef}
       >
+
         <NavigationControl showCompass={true} />
         <GeolocateControl/>
         
@@ -48,36 +75,31 @@ export default function MapComponent({ mapData }) {
           />
         ))}
 
-        {selectedPlace && (
+        {searchedLocation && (
           <Marker
-                latitude={selectedPlace.location.coordinates[1]}
-                longitude={selectedPlace.location.coordinates[0]}
+            latitude={searchedLocation.latitude}
+            longitude={searchedLocation.longitude}
+            zoom={12}
+          >
+              <h1 className='bg-white rounded-lg px-2'>{searchedLocation.name}</h1>
+              <button
+                className="marker-pulse text-red-600 text-2xl"
               >
-                <div className="flex flex-col justify-center items-center gap-1">
-                  <div className="bg-white p-1.5 rounded-lg text-center">Add a visited city
-                    <input type="text" className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-1"/>
-                    <button type="button" className="py-1 px-2 mt-2 text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100">Save</button>
-                  </div>
-                  <button
-                    className="text-red-600 text-2xl"
-                    onClick={() => setViewport({
-                      latitude: city.location.coordinates[1],
-                      longitude: city.location.coordinates[0],
-                      zoom: 12
-                    })}
-                  >
+                <HiLocationMarker />
+              </button>
+          </Marker>
+        )}
+
+        {selectedPlace && (
+            <Marker
+                  latitude={selectedPlace.location.coordinates[1]}
+                  longitude={selectedPlace.location.coordinates[0]}
+                >
+                  <button className="text-red-600 text-2xl">
                     <HiLocationMarker />
                   </button>
-                </div>
-          </Marker>
-          // <Popup
-          //   latitude={selectedPlace.location.coordinates[1]}
-          //   longitude={selectedPlace.location.coordinates[0]}
-          //   onClose={() => setSelectedPlace(null)}
-          // >
-          //   <h1>Hello</h1>
-          //   <PlacePopup place={selectedPlace} />
-          // </Popup>
+            </Marker>
+
         )}
       </ReactMapGL>
     </div>
